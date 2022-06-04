@@ -8,19 +8,17 @@ import (
 )
 
 type TUI struct {
-	app           *tview.Application
-	leftPane      *tview.List
-	leftExplorer  explorer.FileExplorer
-	rightPane     *tview.List
-	rightExplorer explorer.FileExplorer
-	footer        *tview.TextView
+	app       *tview.Application
+	leftPane  Pane
+	rightPane Pane
+	footer    *tview.TextView
 }
 
 func NewTUI(newExplorer explorer.FileExplorer) TUI {
 	t := TUI{
-		app:           tview.NewApplication(),
-		leftExplorer:  newExplorer,
-		rightExplorer: newExplorer,
+		app:       tview.NewApplication(),
+		leftPane:  NewPane(tview.NewList(), newExplorer),
+		rightPane: NewPane(tview.NewList(), newExplorer),
 	}
 
 	t.initFooter()
@@ -42,53 +40,27 @@ func (t *TUI) initFooter() {
 }
 
 func (t *TUI) initLeftPane() {
-	t.leftPane = tview.NewList().
-		SetWrapAround(false).
-		SetHighlightFullLine(true).
-		SetSelectedFocusOnly(true).
-		ShowSecondaryText(false).
-		SetMainTextColor(tcell.ColorNavy).
-		SetSelectedBackgroundColor(tcell.ColorGreen)
+	t.leftPane.SetDesign()
 
-	t.leftPane.SetTitle(t.leftExplorer.Pwd()).
-		SetBorder(true).
-		SetBorderColor(tcell.ColorGreen)
-
-	for _, item := range t.leftExplorer.Ls(t.leftExplorer.Pwd()) {
-		t.leftPane.AddItem(item, "", 0, nil)
-	}
-
-	t.leftPane.SetSelectedFunc(t.leftPaneSelected).
+	t.leftPane.List().
+		SetSelectedFunc(t.leftPaneSelected).
 		SetChangedFunc(t.leftPaneChanged).
 		SetInputCapture(t.leftPaneEvents)
 }
 
 func (t *TUI) initRightPane() {
-	t.rightPane = tview.NewList().
-		SetWrapAround(false).
-		SetHighlightFullLine(true).
-		SetSelectedFocusOnly(true).
-		ShowSecondaryText(false).
-		SetMainTextColor(tcell.ColorNavy).
-		SetSelectedBackgroundColor(tcell.ColorGreen)
+	t.rightPane.SetDesign()
 
-	t.rightPane.SetTitle(t.rightExplorer.Pwd()).
-		SetBorder(true).
-		SetBorderColor(tcell.ColorGreen)
-
-	for _, item := range t.rightExplorer.Ls(t.rightExplorer.Pwd()) {
-		t.rightPane.AddItem(item, "", 0, nil)
-	}
-
-	t.rightPane.SetSelectedFunc(t.rightPaneSelected).
+	t.rightPane.List().
+		SetSelectedFunc(t.rightPaneSelected).
 		SetChangedFunc(t.rightPaneChanged).
 		SetInputCapture(t.rightPaneEvents)
 }
 
 func (t *TUI) initApp() {
 	panes := tview.NewFlex().
-		AddItem(t.leftPane, 0, 1, true).
-		AddItem(t.rightPane, 0, 1, false)
+		AddItem(t.leftPane.List(), 0, 1, true).
+		AddItem(t.rightPane.List(), 0, 1, false)
 
 	menu := tview.NewFlex().
 		SetDirection(tview.FlexRow).

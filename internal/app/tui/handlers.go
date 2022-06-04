@@ -1,6 +1,10 @@
 package tui
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"github.com/gdamore/tcell/v2"
+)
+
+const prevDirectory = "../"
 
 func (t *TUI) appEvents(event *tcell.EventKey) *tcell.EventKey {
 	if event.Rune() == 'q' {
@@ -10,78 +14,58 @@ func (t *TUI) appEvents(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func (t *TUI) rightPaneEvents(event *tcell.EventKey) *tcell.EventKey {
-	if event.Rune() == rune(tcell.KeyTab) {
-		t.app.SetFocus(t.leftPane)
-		return nil
-	}
-
-	if event.Key() == 259 {
-		return nil
-	}
-
-	if event.Key() == 260 {
-		return nil
-	}
-
-	return event
-}
-
 func (t *TUI) leftPaneEvents(event *tcell.EventKey) *tcell.EventKey {
 	if event.Rune() == rune(tcell.KeyTab) {
-		t.app.SetFocus(t.rightPane)
+		t.app.SetFocus(t.rightPane.List())
 		return nil
 	}
 
-	if event.Key() == 259 {
+	if event.Key() == 259 { // ->
+		t.leftPane.ChangeDirectoryIfNeed(t.leftPane.GetCurrentFile())
 		return nil
 	}
 
-	if event.Key() == 260 {
+	if event.Key() == 260 { // <-
+		t.leftPane.ChangeDirectoryIfNeed(prevDirectory)
 		return nil
 	}
 
 	return event
 }
 
-func (t *TUI) rightPaneSelected(i int, s string, s2 string, r rune) {
-	if !t.rightExplorer.IsDir(s) {
-		return
-	}
-
-	t.rightPane.Clear()
-
-	t.rightExplorer.Cd(s)
-
-	t.rightPane.SetTitle(t.rightExplorer.Pwd())
-
-	list := t.rightExplorer.Ls("")
-	for _, item := range list {
-		t.rightPane.AddItem(item, "", 0, nil)
-	}
+func (t *TUI) leftPaneSelected(_ int, fileName string, _ string, _ rune) {
+	t.leftPane.ChangeDirectoryIfNeed(fileName)
 }
 
-func (t *TUI) rightPaneChanged(index int, mainText string, secondaryText string, shortcut rune) {
-	t.footer.SetText(t.rightExplorer.FileInfoString(mainText))
+func (t *TUI) leftPaneChanged(_ int, fileName string, _ string, _ rune) {
+	t.leftPane.SetCurrentFile(fileName)
+	t.footer.SetText(t.leftPane.CurrentFileInfo(fileName))
 }
 
-func (t *TUI) leftPaneSelected(i int, s string, s2 string, r rune) {
-	if !t.leftExplorer.IsDir(s) {
-		return
+func (t *TUI) rightPaneEvents(event *tcell.EventKey) *tcell.EventKey {
+	if event.Rune() == rune(tcell.KeyTab) {
+		t.app.SetFocus(t.leftPane.List())
+		return nil
 	}
 
-	t.leftPane.Clear()
-
-	t.leftExplorer.Cd(s)
-
-	t.leftPane.SetTitle(t.leftExplorer.Pwd())
-
-	list := t.leftExplorer.Ls("")
-	for _, item := range list {
-		t.leftPane.AddItem(item, "", 0, nil)
+	if event.Key() == 259 { // ->
+		t.rightPane.ChangeDirectoryIfNeed(t.rightPane.GetCurrentFile())
+		return nil
 	}
+
+	if event.Key() == 260 { // <-
+		t.rightPane.ChangeDirectoryIfNeed(prevDirectory)
+		return nil
+	}
+
+	return event
 }
 
-func (t *TUI) leftPaneChanged(index int, mainText string, secondaryText string, shortcut rune) {
-	t.footer.SetText(t.leftExplorer.FileInfoString(mainText))
+func (t *TUI) rightPaneSelected(_ int, fileName string, _ string, _ rune) {
+	t.rightPane.ChangeDirectoryIfNeed(fileName)
+}
+
+func (t *TUI) rightPaneChanged(_ int, fileName string, _ string, _ rune) {
+	t.rightPane.SetCurrentFile(fileName)
+	t.footer.SetText(t.rightPane.CurrentFileInfo(fileName))
 }
