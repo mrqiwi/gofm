@@ -17,6 +17,7 @@ func (t *TUI) appEvents(event *tcell.EventKey) *tcell.EventKey {
 func (t *TUI) leftPaneEvents(event *tcell.EventKey) *tcell.EventKey {
 	if event.Rune() == rune(tcell.KeyTab) {
 		t.app.SetFocus(t.rightPane.List())
+		t.footer.SetText(t.rightPane.CurrentFileInfo())
 		return nil
 	}
 
@@ -39,12 +40,14 @@ func (t *TUI) leftPaneSelected(_ int, fileName string, _ string, _ rune) {
 
 func (t *TUI) leftPaneChanged(_ int, fileName string, _ string, _ rune) {
 	t.leftPane.SetCurrentFile(fileName)
-	t.footer.SetText(t.leftPane.CurrentFileInfo(fileName))
+	t.footer.SetText(t.leftPane.FileInfo(fileName))
 }
 
 func (t *TUI) rightPaneEvents(event *tcell.EventKey) *tcell.EventKey {
 	if event.Rune() == rune(tcell.KeyTab) {
 		t.app.SetFocus(t.leftPane.List())
+		t.footer.SetText(t.leftPane.CurrentFileInfo())
+
 		return nil
 	}
 
@@ -67,5 +70,5 @@ func (t *TUI) rightPaneSelected(_ int, fileName string, _ string, _ rune) {
 
 func (t *TUI) rightPaneChanged(_ int, fileName string, _ string, _ rune) {
 	t.rightPane.SetCurrentFile(fileName)
-	t.footer.SetText(t.rightPane.CurrentFileInfo(fileName))
+	t.footer.SetText(t.rightPane.FileInfo(fileName))
 }

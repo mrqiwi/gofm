@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"log/syslog"
+
 	"gofm/internal/app/explorer"
 
 	"github.com/gdamore/tcell/v2"
@@ -8,17 +10,20 @@ import (
 )
 
 type TUI struct {
+	logger *syslog.Writer //TODO temporary for debugging
+
 	app       *tview.Application
 	leftPane  Pane
 	rightPane Pane
 	footer    *tview.TextView
 }
 
-func NewTUI(newExplorer explorer.FileExplorer) TUI {
+func NewTUI(newExplorer explorer.FileExplorer, logger *syslog.Writer) TUI {
 	t := TUI{
 		app:       tview.NewApplication(),
 		leftPane:  NewPane(tview.NewList(), newExplorer),
 		rightPane: NewPane(tview.NewList(), newExplorer),
+		logger:    logger,
 	}
 
 	t.initFooter()
@@ -35,12 +40,12 @@ func (t *TUI) Run() error {
 
 func (t *TUI) initFooter() {
 	t.footer = tview.NewTextView().
-		SetText("").
+		SetText(t.leftPane.CurrentFileInfo()).
 		SetTextColor(tcell.ColorGreen)
 }
 
 func (t *TUI) initLeftPane() {
-	t.leftPane.SetDesign()
+	t.leftPane.Init()
 
 	t.leftPane.List().
 		SetSelectedFunc(t.leftPaneSelected).
@@ -49,7 +54,7 @@ func (t *TUI) initLeftPane() {
 }
 
 func (t *TUI) initRightPane() {
-	t.rightPane.SetDesign()
+	t.rightPane.Init()
 
 	t.rightPane.List().
 		SetSelectedFunc(t.rightPaneSelected).

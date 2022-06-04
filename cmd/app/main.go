@@ -10,6 +10,12 @@ import (
 
 const appName = "gofm"
 
+// TODO
+// 1) SFTP
+// 2) FTP
+// 3) SMB
+// 4) YANDEX DISK
+
 func main() {
 	logger, err := syslog.New(syslog.LOG_DEBUG, appName)
 	if err != nil {
@@ -17,7 +23,7 @@ func main() {
 	}
 
 	newExplorer := explorer.NewFileExplorer(logger)
-	app := tui.NewTUI(newExplorer)
+	app := tui.NewTUI(newExplorer, logger)
 
 	err = app.Run()
 	if err != nil {

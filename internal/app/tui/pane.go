@@ -1,9 +1,9 @@
 package tui
 
 import (
-	"github.com/gdamore/tcell/v2"
 	"gofm/internal/app/explorer"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -20,7 +20,7 @@ func NewPane(pane *tview.List, explorer explorer.FileExplorer) Pane {
 	}
 }
 
-func (p *Pane) SetDesign() {
+func (p *Pane) Init() {
 	p.list.SetWrapAround(false).
 		SetHighlightFullLine(true).
 		SetSelectedFocusOnly(true).
@@ -31,9 +31,13 @@ func (p *Pane) SetDesign() {
 		SetBorder(true).
 		SetBorderColor(tcell.ColorGreen)
 
-	for _, item := range p.explorer.Ls(p.explorer.Pwd()) {
+	fileList := p.explorer.Ls(p.explorer.Pwd())
+
+	for _, item := range fileList {
 		p.list.AddItem(item, "", 0, nil)
 	}
+
+	p.SetCurrentFile(fileList[0])
 }
 
 func (p *Pane) List() *tview.List {
@@ -65,6 +69,10 @@ func (p *Pane) GetCurrentFile() string {
 	return p.currentFile
 }
 
-func (p *Pane) CurrentFileInfo(fileName string) string {
+func (p *Pane) FileInfo(fileName string) string {
 	return p.explorer.FileInfoString(fileName)
+}
+
+func (p *Pane) CurrentFileInfo() string {
+	return p.explorer.FileInfoString(p.currentFile)
 }
