@@ -61,11 +61,16 @@ func (fe *FileExplorer) IsDir(path string) bool {
 }
 
 func (fe *FileExplorer) Ls(path string) ([]string, error) {
-	if path != "" {
-		return fe.ls(fe.Abs(path))
+	if path == "" {
+		return fe.ls(fe.Pwd())
 	}
 
-	return fe.ls(fe.Pwd())
+	if path == "../" {
+		dir, _ := filepath.Split(fe.Pwd())
+		return fe.ls(dir)
+	}
+
+	return fe.ls(fe.Abs(path))
 }
 
 func (fe *FileExplorer) ls(path string) ([]string, error) {
