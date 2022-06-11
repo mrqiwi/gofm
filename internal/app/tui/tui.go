@@ -54,10 +54,7 @@ func (t *TUI) initFooter() {
 func (t *TUI) initAlert() {
 	t.alert = tview.NewModal().
 		SetBackgroundColor(tcell.ColorRed).
-		AddButtons([]string{"OK"}).
-		SetDoneFunc(func(buttonIndex int, buttonLabel string) { // TODO fix focus
-			t.pages.HidePage(pageAlert)
-		})
+		AddButtons([]string{"OK"})
 }
 
 func (t *TUI) initLeftPane() {
@@ -98,6 +95,13 @@ func (t *TUI) initApp() {
 }
 
 func (t *TUI) showAlert(msg string) {
-	t.alert.SetText(msg)
+	focusedPrimitive := t.app.GetFocus()
+
+	t.alert.SetText(msg).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			t.pages.HidePage(pageAlert)
+			t.app.SetFocus(focusedPrimitive)
+		})
+
 	t.pages.ShowPage(pageAlert)
 }
