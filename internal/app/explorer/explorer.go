@@ -60,15 +60,15 @@ func (fe *FileExplorer) IsDir(path string) bool {
 	return fileInfo.IsDir()
 }
 
-func (fe *FileExplorer) Ls(path string) []string {
+func (fe *FileExplorer) Ls(path string) ([]string, error) {
 	if path != "" {
-		return fe.ls(path)
+		return fe.ls(fe.Abs(path))
 	}
 
 	return fe.ls(fe.Pwd())
 }
 
-func (fe *FileExplorer) ls(path string) []string {
+func (fe *FileExplorer) ls(path string) ([]string, error) {
 	list := []string{}
 
 	if path != "/" {
@@ -77,8 +77,7 @@ func (fe *FileExplorer) ls(path string) []string {
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		fe.logger.Err(err.Error())
-		return nil
+		return nil, err
 	}
 
 	for _, f := range files {
@@ -89,7 +88,7 @@ func (fe *FileExplorer) ls(path string) []string {
 		}
 	}
 
-	return list
+	return list, nil
 }
 
 func (fe *FileExplorer) FileInfoString(path string) string {

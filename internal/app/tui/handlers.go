@@ -22,12 +22,20 @@ func (t *TUI) leftPaneEvents(event *tcell.EventKey) *tcell.EventKey {
 	}
 
 	if event.Key() == 259 { // ->
-		t.leftPane.ChangeDirectoryIfNeed(t.leftPane.GetCurrentFile())
+		err := t.leftPane.ChangeDirectoryIfNeed(t.leftPane.GetCurrentFile())
+		if err != nil {
+			t.showAlert(err.Error())
+		}
+
 		return nil
 	}
 
 	if event.Key() == 260 { // <-
-		t.leftPane.ChangeDirectoryIfNeed(prevDirectory)
+		err := t.leftPane.ChangeDirectoryIfNeed(prevDirectory)
+		if err != nil {
+			t.showAlert(err.Error())
+		}
+
 		return nil
 	}
 
@@ -35,7 +43,10 @@ func (t *TUI) leftPaneEvents(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (t *TUI) leftPaneSelected(_ int, fileName string, _ string, _ rune) {
-	t.leftPane.ChangeDirectoryIfNeed(fileName)
+	err := t.leftPane.ChangeDirectoryIfNeed(fileName)
+	if err != nil {
+		t.showAlert(err.Error())
+	}
 }
 
 func (t *TUI) leftPaneChanged(_ int, fileName string, _ string, _ rune) {
@@ -52,12 +63,20 @@ func (t *TUI) rightPaneEvents(event *tcell.EventKey) *tcell.EventKey {
 	}
 
 	if event.Key() == 259 { // ->
-		t.rightPane.ChangeDirectoryIfNeed(t.rightPane.GetCurrentFile())
+		err := t.rightPane.ChangeDirectoryIfNeed(t.rightPane.GetCurrentFile())
+		if err != nil {
+			t.showAlert(err.Error())
+		}
+
 		return nil
 	}
 
 	if event.Key() == 260 { // <-
-		t.rightPane.ChangeDirectoryIfNeed(prevDirectory)
+		err := t.rightPane.ChangeDirectoryIfNeed(prevDirectory)
+		if err != nil {
+			t.showAlert(err.Error())
+		}
+
 		return nil
 	}
 
@@ -65,7 +84,11 @@ func (t *TUI) rightPaneEvents(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (t *TUI) rightPaneSelected(_ int, fileName string, _ string, _ rune) {
-	t.rightPane.ChangeDirectoryIfNeed(fileName)
+	err := t.rightPane.ChangeDirectoryIfNeed(fileName)
+	if err != nil {
+		t.showAlert(err.Error())
+	}
+
 }
 
 func (t *TUI) rightPaneChanged(_ int, fileName string, _ string, _ rune) {

@@ -1,12 +1,16 @@
 package tui
 
 import (
-	"log/syslog"
-
 	"gofm/internal/app/explorer"
+	"log/syslog"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+)
+
+const (
+	pageMenu  = "menu"
+	pageAlert = "alert"
 )
 
 type TUI struct {
@@ -16,16 +20,19 @@ type TUI struct {
 	leftPane  Pane
 	rightPane Pane
 	footer    *tview.TextView
+	alert     *tview.Modal
+	pages     *tview.Pages
 }
 
 func NewTUI(newExplorer explorer.FileExplorer, logger *syslog.Writer) TUI {
 	t := TUI{
 		app:       tview.NewApplication(),
-		leftPane:  NewPane(tview.NewList(), newExplorer),
-		rightPane: NewPane(tview.NewList(), newExplorer),
+		leftPane:  NewPane(tview.NewList(), newExplorer, logger),
+		rightPane: NewPane(tview.NewList(), newExplorer, logger),
 		logger:    logger,
 	}
 
+	t.initAlert()
 	t.initFooter()
 	t.initLeftPane()
 	t.initRightPane()
@@ -42,6 +49,15 @@ func (t *TUI) initFooter() {
 	t.footer = tview.NewTextView().
 		SetText(t.leftPane.CurrentFileInfo()).
 		SetTextColor(tcell.ColorGreen)
+}
+
+func (t *TUI) initAlert() {
+	t.alert = tview.NewModal().
+		SetBackgroundColor(tcell.ColorRed).
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) { // TODO fix focus
+			t.pages.HidePage(pageAlert)
+		})
 }
 
 func (t *TUI) initLeftPane() {
@@ -72,7 +88,16 @@ func (t *TUI) initApp() {
 		AddItem(panes, 0, 15, true).
 		AddItem(t.footer, 0, 1, false)
 
-	t.app.SetRoot(menu, true).
+	t.pages = tview.NewPages().
+		AddPage(pageMenu, menu, true, true).
+		AddPage(pageAlert, t.alert, true, false)
+
+	t.app.SetRoot(t.pages, true).
 		EnableMouse(true).
 		SetInputCapture(t.appEvents)
+}
+
+func (t *TUI) showAlert(msg string) {
+	t.alert.SetText(msg)
+	t.pages.ShowPage(pageAlert)
 }

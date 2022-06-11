@@ -2,21 +2,25 @@ package tui
 
 import (
 	"gofm/internal/app/explorer"
+	"log/syslog"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 type Pane struct {
+	logger *syslog.Writer
+
 	currentFile string
 	list        *tview.List
 	explorer    explorer.FileExplorer
 }
 
-func NewPane(pane *tview.List, explorer explorer.FileExplorer) Pane {
+func NewPane(pane *tview.List, explorer explorer.FileExplorer, logger *syslog.Writer) Pane {
 	return Pane{
 		list:     pane,
 		explorer: explorer,
+		logger:   logger,
 	}
 }
 
@@ -31,7 +35,10 @@ func (p *Pane) Init() {
 		SetBorder(true).
 		SetBorderColor(tcell.ColorGreen)
 
-	fileList := p.explorer.Ls(p.explorer.Pwd())
+	fileList, err := p.explorer.Ls("")
+	if err != nil {
+		return
+	}
 
 	for _, item := range fileList {
 		p.list.AddItem(item, "", 0, nil)
@@ -44,21 +51,25 @@ func (p *Pane) List() *tview.List {
 	return p.list
 }
 
-func (p *Pane) ChangeDirectoryIfNeed(path string) {
+func (p *Pane) ChangeDirectoryIfNeed(path string) error {
 	if !p.explorer.IsDir(path) {
-		return
+		return nil
+	}
+
+	fileList, err := p.explorer.Ls(path)
+	if err != nil {
+		return err
 	}
 
 	p.list.Clear()
-
 	p.explorer.Cd(path)
-
 	p.list.SetTitle(p.explorer.Pwd())
 
-	list := p.explorer.Ls("")
-	for _, item := range list {
+	for _, item := range fileList {
 		p.list.AddItem(item, "", 0, nil)
 	}
+
+	return nil
 }
 
 func (p *Pane) SetCurrentFile(name string) {
